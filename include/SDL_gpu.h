@@ -383,6 +383,7 @@ typedef struct GPU_Camera
 	float zoom_x, zoom_y;
 	float z_near, z_far;  // z clipping planes
 	GPU_bool use_centered_origin;  // move rotation/scaling origin to the center of the camera's view
+	GPU_bool move_in_rotated_axis;  // move before or after rotation
 	
 	GPU_PAD_7_TO_64
 } GPU_Camera;

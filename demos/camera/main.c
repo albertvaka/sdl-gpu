@@ -1,11 +1,12 @@
 #include <SDL.h>
 #include "SDL_gpu.h"
+#include <stdio.h>
 
 #define MOVE_VEL 800
 #define ZOOM_VEL 2
 #define ROTATE_VEL 45
 
-void main_loop(GPU_Target* screen)
+void main_loop(GPU_Target* screen, SDL_Window* window)
 {
     Uint8 done;
     SDL_Event event;
@@ -13,6 +14,7 @@ void main_loop(GPU_Target* screen)
     float dt;
     GPU_Camera camera;
     GPU_Image *image1, *image2;
+    char title[128];
 
     image1 = GPU_LoadImage("data/test3.png");
     image2 = GPU_LoadImage("data/test2.png");
@@ -35,6 +37,8 @@ void main_loop(GPU_Target* screen)
                     done = 1;
                 else if(event.key.keysym.sym == SDLK_c)
                     camera.use_centered_origin = !camera.use_centered_origin;
+                else if(event.key.keysym.sym == SDLK_x)
+                    camera.move_in_rotated_axis = !camera.move_in_rotated_axis;
                 else if(event.key.keysym.sym == SDLK_w)
                     camera.y -= MOVE_VEL*dt;
                 else if(event.key.keysym.sym == SDLK_s)
@@ -55,6 +59,9 @@ void main_loop(GPU_Target* screen)
                     camera.angle += ROTATE_VEL*dt;
             }
         }
+
+        sprintf(title, "Camera Demo - Centered origin: %d, Move in rotated axis: %d", camera.use_centered_origin, camera.move_in_rotated_axis);
+        SDL_SetWindowTitle(window, title);
 
         GPU_SetCamera(screen, &camera);
 
@@ -79,6 +86,7 @@ void main_loop(GPU_Target* screen)
 int main(int argc, char* argv[])
 {
     GPU_Target* screen;
+    SDL_Window* window;
 
     GPU_SetDebugLevel(GPU_DEBUG_LEVEL_1);
 
@@ -86,9 +94,11 @@ int main(int argc, char* argv[])
     if(screen == NULL)
         return -1;
 
+    window = SDL_GetWindowFromID(screen->context->windowID);
+
     GPU_EnableCamera(screen, true);
 
-    main_loop(screen);
+    main_loop(screen, window);
 
     GPU_Quit();
 

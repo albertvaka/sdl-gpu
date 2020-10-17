@@ -1176,7 +1176,7 @@ static void applyTargetCamera(GPU_Target* target)
 
 static GPU_bool equal_cameras(GPU_Camera a, GPU_Camera b)
 {
-    return (a.x == b.x && a.y == b.y && a.z == b.z && a.angle == b.angle && a.zoom_x == b.zoom_x && a.zoom_y == b.zoom_y && a.use_centered_origin == b.use_centered_origin);
+    return (a.x == b.x && a.y == b.y && a.z == b.z && a.angle == b.angle && a.zoom_x == b.zoom_x && a.zoom_y == b.zoom_y && a.use_centered_origin == b.use_centered_origin && a.move_in_rotated_axis == b.move_in_rotated_axis);
 }
 
 static void changeCamera(GPU_Target* target)
@@ -1195,18 +1195,38 @@ static void get_camera_matrix(GPU_Target* target, float* result)
 
     GPU_MatrixIdentity(result);
 
-    if(target->camera.use_centered_origin)
-    {
-        offsetX = target->w/2.0f;
-        offsetY = target->h/2.0f;
-        GPU_MatrixTranslate(result, offsetX, offsetY, 0);
-    }
+    if (target->camera.move_in_rotated_axis) {
+
+        GPU_MatrixTranslate(result, -target->camera.x, -target->camera.y, -target->camera.z);
+
+        if(target->camera.use_centered_origin)
+        {
+            offsetX = target->w/2.0f;
+            offsetY = target->h/2.0f;
+            GPU_MatrixTranslate(result, offsetX, offsetY, 0);
+        }
+
+        GPU_MatrixRotate(result, target->camera.angle, 0, 0, 1);
+        GPU_MatrixScale(result, target->camera.zoom_x, target->camera.zoom_y, 1.0f);
+
+        if(target->camera.use_centered_origin)
+            GPU_MatrixTranslate(result, -offsetX, -offsetY, 0);
     
-    GPU_MatrixRotate(result, target->camera.angle, 0, 0, 1);
+    } else {
 
-    GPU_MatrixScale(result, target->camera.zoom_x, target->camera.zoom_y, 1.0f);
+        if(target->camera.use_centered_origin)
+        {
+            offsetX = target->w/2.0f;
+            offsetY = target->h/2.0f;
+            GPU_MatrixTranslate(result, offsetX, offsetY, 0);
+        }
 
-    GPU_MatrixTranslate(result, -target->camera.x, -target->camera.y, -target->camera.z);
+        GPU_MatrixRotate(result, target->camera.angle, 0, 0, 1);
+        GPU_MatrixScale(result, target->camera.zoom_x, target->camera.zoom_y, 1.0f);
+
+        GPU_MatrixTranslate(result, -target->camera.x, -target->camera.y, -target->camera.z);
+
+    }
 
 }
 
